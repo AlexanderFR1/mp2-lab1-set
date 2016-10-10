@@ -9,8 +9,13 @@
 
 TBitField::TBitField(int len)
 {
-	MemLen=(len + sizeof(int)*8-1)/(sizeof(int)*8);//вычисляем колличество используемых 32-битных чисел
-	pMem= new TELEM (MemLen);
+	if (len <= 0)
+	{
+		throw "negative memory";
+	}
+	BitLen = len;
+	MemLen = (len + sizeof(int)*8-1)/(sizeof(int)*8);//вычисляем колличество используемых 32-битных чисел
+	pMem = new TELEM [MemLen];
 	for (int i=0;i<MemLen;i++)
 			pMem[i]=0;
 }
@@ -51,11 +56,20 @@ int TBitField::GetLength(void) const // получить длину (к-во б�
 
 void TBitField::SetBit(const int n) // установить бит
 {
+	if (n < 0)
+	{
+		throw "negative identificator";
+	}
 	pMem[GetMemIndex(n)]|=GetMemMask(n);//устанавливаем бит в 32-битном числе с соответствующей маской
 }
 
 void TBitField::ClrBit(const int n) // очистить бит
 {
+	if (n >= BitLen)
+	{
+		throw "current index out of date";
+	}
+
 	pMem[GetMemIndex(n)]&=~GetMemMask(n);
 }
 
@@ -122,6 +136,7 @@ TBitField TBitField::operator|(const TBitField &bf) // операция "или"
 		tempMultitude.pMem[i]=pMem[i];
 	for (int i=0;i<bf.BitLen;i++)
 		tempMultitude.pMem[i]|=bf.pMem[i];
+	return tempMultitude;
 }
 
 TBitField TBitField::operator&(const TBitField &bf) // операция "и"
@@ -131,6 +146,7 @@ TBitField TBitField::operator&(const TBitField &bf) // операция "и"
 		tempMultitude.pMem[i]=pMem[i];
 	for (int i=0;i<bf.BitLen;i++)
 		tempMultitude.pMem[i]&=bf.pMem[i];
+	return tempMultitude;
 }
 
 TBitField TBitField::operator~(void) // отрицание
@@ -138,6 +154,7 @@ TBitField TBitField::operator~(void) // отрицание
 	TBitField tempMultitude(BitLen);
 	for (int i=0;i<BitLen;i++)
 		tempMultitude.pMem[i]= ~pMem[i];//каждый i-й элемент из tempMultitude присваивает отрицание из соотв. pMem[i]
+	return tempMultitude;
 }
 
 // ввод/вывод
