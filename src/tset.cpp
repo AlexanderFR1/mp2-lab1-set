@@ -7,128 +7,148 @@
 
 #include "tset.h"
 
-TSet::TSet(int mp) : BitField(-1)
+TSet :: TSet (int mp) :  MaxPower (mp), BitField (mp)
 {
 }
 
 // конструктор копирования
-TSet::TSet(const TSet &s) : BitField(-1)
+TSet :: TSet (const TSet & s) : BitField (s.BitField), MaxPower (s.MaxPower)
 {
 }
 
 // конструктор преобразования типа
-TSet::TSet(const TBitField &bf) : BitField(-1)
+TSet :: TSet (const TBitField & bf) : MaxPower (bf.GetLength()), BitField(bf)
 {
 }
 
 TSet::operator TBitField()
 {
+	TBitField temp (this -> BitField);
+	return temp;
 }
 
-int TSet::GetMaxPower(void) const // получить макс. к-во эл-тов
+int TSet:: GetMaxPower (void) const // получить макс. к-во эл-тов
 {
 	return MaxPower;
 }
 
-int TSet::IsMember(const int Elem) const // элемент множества?
+int TSet :: IsMember(const int Elem) const // элемент множества?
 {
-	return BitField.GetBit(Elem);//если получим ненулевой, то вернёт true
+   return BitField.GetBit (Elem);
 }
 
-void TSet::InsElem(const int Elem) // включение элемента множества
+void TSet :: InsElem (const int Elem) // включение элемента множества
 {
-	BitField.SetBit(Elem);
+	BitField.SetBit (Elem);
 }
 
-void TSet::DelElem(const int Elem) // исключение элемента множества
+void TSet :: DelElem (const int Elem) // исключение элемента множества
 {
-	BitField.ClrBit(Elem);
+	BitField.ClrBit (Elem);
 }
 
 // теоретико-множественные операции
 
-TSet& TSet::operator=(const TSet &s) // присваивание
+TSet & TSet :: operator = (const TSet & s) // присваивание
 {
-	BitField=s.BitField;
-	MaxPower=s.MaxPower;
+	BitField = s.BitField;
+	MaxPower = s.GetMaxPower ();
 	return *this;
 }
 
-int TSet::operator==(const TSet &s) const // сравнение
+int TSet :: operator == (const TSet & s) const // сравнение
 {
-	return BitField==s.BitField;
+    return (BitField == s.BitField);
 }
 
-int TSet::operator!=(const TSet &s) const // сравнение
+int TSet :: operator != (const TSet & s) const // сравнение
 {
-	return BitField!=s.BitField;
+	return (BitField != s.BitField);
 }
 
-TSet TSet::operator+(const TSet &s) // объединение
+TSet TSet :: operator + (const TSet & s) // объединение
 {
-	return BitField|s.BitField;
+	TSet temp (BitField | s.BitField);
+	return temp;
 }
 
-TSet TSet::operator+(const int Elem) // объединение с элементом
+TSet TSet :: operator + (const int Elem) // объединение с элементом
 {
-	return BitField|Elem;
+	TSet temp (BitField);
+	temp.BitField.SetBit (Elem);
+	return temp;
 }
 
-TSet TSet::operator-(const int Elem) // разность с элементом
+TSet TSet :: operator - (const int Elem) // разность с элементом
 {
-	return BitField|(~Elem);
+	TSet temp (BitField);
+	temp.BitField.ClrBit (Elem);
+	return temp;
 }
 
-TSet TSet::operator*(const TSet &s) // пересечение
+TSet TSet :: operator * (const TSet & s) // пересечение
 {
-	return BitField&s.BitField;
+	TSet temp (BitField & s.BitField);
+	return temp;
 }
 
-TSet TSet::operator~(void) // дополнение
+TSet TSet :: operator ~ (void) // дополнение
 {
-	return ~BitField;
+	TSet temp (~ BitField);
+	return temp;
 }
 
 // перегрузка ввода/вывода
 
-istream &operator>>(istream &istr, TSet &s) // ввод
+istream & operator >> (istream & istr, TSet & s) // ввод
 {
-	int currentElem;
+	int temp;
 	char symbol;
-	do
+	do 
 	{
-		istr>>symbol;
+		istr >> symbol;
 	}
-	while (symbol!='{');
-	do
+	while (symbol != '{');
+	do 
 	{
-		istr>>currentElem;
-		s.InsElem(currentElem);
+		istr >> temp;
+		s.InsElem(temp);
 		do 
 		{
-			istr>>symbol;
+			istr >> symbol;
 		}
-		while ( (symbol!=',') && (symbol!='}') );
+		while ( symbol != ',' && symbol != '}');
 	}
-	while (symbol!='}');
+	while (symbol != '}');
 	return istr;
 }
 
-ostream& operator<<(ostream &ostr, const TSet &s) // вывод
-{
-	int size;
-	char symbol;
-	symbol=' ';
-	ostr<<'{';
-	size=s.GetMaxPower();
-	for (int i=0;i<size;i++)
+ostream & operator << (ostream & ostr, const TSet & s) // вывод
+{ 
+	bool flag = false;
+	int temp =  s.GetMaxPower();
+	for (int i = 0; i < temp; ++i)
 	{
-		if ( s.IsMember(i) )
+		if (s.IsMember(i))
 		{
-			ostr<<symbol<<'x'<<i<<'='<<s.BitField.GetBit(i)<<' ';
-			symbol=',';
+			flag = true;
 		}
 	}
-	ostr<<'}';
+	if (flag)
+	{
+		ostr << "{ ";
+		for (int i = 0; i < s.MaxPower ; ++i)
+		{
+			if (s.IsMember(i))
+			{
+				ostr << i << "; ";
+			}
+		}
+		ostr << "}";
+	}
+	else
+	{
+		ostr << "0";
+	}
 	return ostr;
 }
